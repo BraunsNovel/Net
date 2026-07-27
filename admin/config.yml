@@ -1,0 +1,68 @@
+backend:
+  name: git-gateway
+  branch: main
+  squash_merges: true
+
+media_folder: "src/images/uploads"
+public_folder: "/images/uploads"
+
+publish_mode: editorial_workflow
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: "-"
+
+collections:
+  # ============ SERİLER ============
+  - name: "series"
+    label: "📚 Seriler"
+    label_singular: "Seri"
+    folder: "content/series"
+    create: true
+    slug: "{{slug}}"
+    identifier_field: "title"
+    summary: "{{title}} — {{status}}"
+    sortable_fields: ["title", "status", "publishDate"]
+    fields:
+      - { label: "Başlık", name: "title", widget: "string", required: true, hint: "Serinin ana başlığı" }
+      - { label: "Alternatif Başlık", name: "altTitle", widget: "string", required: false, hint: "Orijinal dildeki başlık (örn: Na Honjaman Level Up)" }
+      - { label: "Yazar", name: "author", widget: "string", required: true, default: "Bilinmiyor" }
+      - { label: "Çizer (Artist)", name: "artist", widget: "string", required: false }
+      - { label: "Durum", name: "status", widget: "select", options: ["ongoing", "completed", "hiatus", "dropped"], default: "ongoing", hint: "ongoing=Devam Ediyor, completed=Tamamlandı, hiatus=Beklemede, dropped=Bırakıldı" }
+      - { label: "Güncelleme Sıklığı", name: "updateSchedule", widget: "string", default: "Her gün", hint: "Örn: 'Pazartesi - Çarşamba - Cuma' veya 'Tamamlandı'" }
+      - { label: "Kapak Görseli", name: "cover", widget: "image", required: true, choose_url: false, hint: "Önerilen boyut: 600x800px (3:4 oran)" }
+      - { label: "Türler", name: "genres", widget: "list", default: ["Action", "Fantasy"], hint: "Birden fazla tür ekleyebilirsiniz" }
+      - { label: "Öne Çıkan", name: "featured", widget: "boolean", default: false, hint: "Ana sayfada hero bölümünde gösterilir (sadece 1 seri seçin)" }
+      - { label: "Özet", name: "synopsis", widget: "markdown", required: true, hint: "Serinin kısa özeti. Markdown destekler." }
+      - { label: "Yayın Tarihi", name: "publishDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { label: "Dil", name: "language", widget: "select", options: ["tr", "en", "ko", "zh", "jp"], default: "tr" }
+      - { label: "Orijinal Kaynak", name: "source", widget: "string", required: false, hint: "Webnovel, Wuxiaworld vb." }
+
+  # ============ BÖLÜMLER ============
+  - name: "chapters"
+    label: "📖 Bölümler"
+    label_singular: "Bölüm"
+    folder: "content/chapters"
+    create: true
+    slug: "{{series}}-{{chapterNumber | pad(3)}}"
+    identifier_field: "title"
+    summary: "{{series}} — Bölüm {{chapterNumber}}: {{title}}"
+    sortable_fields: ["series", "chapterNumber", "publishedAt"]
+    fields:
+      - { label: "Seri", name: "series", widget: "relation", collection: "series", value_field: "slug", search_fields: ["title"], display_fields: ["title"], required: true }
+      - { label: "Bölüm Başlığı", name: "title", widget: "string", required: true, hint: "Örn: 'Zindan' veya 'Uyanış'" }
+      - { label: "Bölüm Numarası", name: "chapterNumber", widget: "number", value_type: "int", min: 1, required: true }
+      - { label: "Yayın Tarihi", name: "publishedAt", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { label: "Notlar (Editör)", name: "editorNote", widget: "text", required: false, hint: "Okuyucuya gösterilecek not (örn: çeviri hatası uyarısı)" }
+      - { label: "İçerik", name: "body", widget: "markdown", required: true, hint: "Bölüm metnini buraya yazın. **kalın**, *italik*, > alıntı, — liste desteklenir." }
+
+  # ============ SABİT SAYFALAR ============
+  - name: "pages"
+    label: "📄 Sayfalar"
+    folder: "content/pages"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Başlık", name: "title", widget: "string" }
+      - { label: "İçerik", name: "body", widget: "markdown" }
