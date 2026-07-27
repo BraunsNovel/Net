@@ -1,0 +1,14 @@
+{
+  "name": "brauns-novel",
+  "version": "1.0.0",
+  "description": "Braun's Novel - Profesyonel Web Novel Okuma Platformu",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "dev": "node scripts/build.js && npx serve dist"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "marked": "^12.0.0"
+  }
+}
