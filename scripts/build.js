@@ -7,6 +7,13 @@ import { marked } from 'marked';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// 🛡️ YENİ EKLEME: src/uploads klasörünün varlığını garanti et
+const srcUploadsDir = path.join(__dirname, '../src/uploads');
+if (!fs.existsSync(srcUploadsDir)) {
+  fs.mkdirSync(srcUploadsDir, { recursive: true });
+  console.log('📁 src/uploads klasörü oluşturuldu.');
+}
+
 // Girdi ve Çıktı Dizinleri (Netlify uyumlu: dist klasörüne yazıyoruz)
 const chaptersDir = path.join(__dirname, '../content/chapters');
 const novelsDir = path.join(__dirname, '../content/novels');
