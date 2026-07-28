@@ -2,7 +2,6 @@ backend:
   name: git-gateway
   branch: main
 
-# GÖRSEL YOLU DÜZELTİLDİ
 media_folder: "src/uploads"
 public_folder: "/uploads"
 
