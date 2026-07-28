@@ -7,35 +7,30 @@ import { marked } from 'marked';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 1. Türkçe Uyumlu Slugify Fonksiyonu (URL Çökmelerini Önler)
+// 1. TÜRKÇE UYUMLU SLUGIFY (URL Çökmelerini Önler)
 function slugify(text) {
   if (!text) return '';
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
+  return text.toString().toLowerCase().trim()
     .replace(/\s+/g, '-')
     .replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ğ/g, 'g')
     .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
     .replace(/[^a-z0-9\-]/g, '');
 }
 
+// 2. GÖRSEL KLASÖRÜNÜ GARANTİ ET (Kırık Resimleri Önler)
+const srcUploadsDir = path.join(__dirname, '../src/uploads');
+if (!fs.existsSync(srcUploadsDir)) fs.mkdirSync(srcUploadsDir, { recursive: true });
+
 // Dizinler
 const chaptersDir = path.join(__dirname, '../content/chapters');
 const novelsDir = path.join(__dirname, '../content/novels');
-const srcUploadsDir = path.join(__dirname, '../src/uploads');
-const adminDir = path.join(__dirname, '../admin');
-
 const outputDir = path.join(__dirname, '../dist/content');
 const outputChaptersDir = path.join(__dirname, '../dist/content/chapters');
-const distAdminDir = path.join(__dirname, '../dist/admin');
 
-// Çıktı klasörlerini hazırla
-if (!fs.existsSync(srcUploadsDir)) fs.mkdirSync(srcUploadsDir, { recursive: true });
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 if (!fs.existsSync(outputChaptersDir)) fs.mkdirSync(outputChaptersDir, { recursive: true });
 
-// Novel verilerini oku (Bölümlere novel adı eşleştirmek için)
+// Novel verilerini önce oku (Bölümlere başlık eşleştirmek için)
 let novelsData = {};
 if (fs.existsSync(novelsDir)) {
   const novelFiles = fs.readdirSync(novelsDir).filter(f => f.endsWith('.md'));
@@ -46,7 +41,7 @@ if (fs.existsSync(novelsDir)) {
   });
 }
 
-// 1. NOVELLERİ DERLE
+// NOVELLERİ DERLE (Ana Sayfa İçin novels-index.json Üretir)
 function buildNovels() {
   if (!fs.existsSync(novelsDir)) {
     fs.writeFileSync(path.join(outputDir, 'novels-index.json'), JSON.stringify([], null, 2));
@@ -71,7 +66,7 @@ function buildNovels() {
   console.log(`✅ ${novels.length} novel derlendi.`);
 }
 
-// 2. BÖLÜMLERİ DERLE
+// BÖLÜMLERİ DERLE (Ana Sayfa İçin chapters-index.json Üretir)
 function buildChapters() {
   if (!fs.existsSync(chaptersDir)) {
     fs.writeFileSync(path.join(outputDir, 'chapters-index.json'), JSON.stringify([], null, 2));
@@ -80,17 +75,12 @@ function buildChapters() {
   const files = fs.readdirSync(chaptersDir).filter(f => f.endsWith('.md'));
   const chapters = files.map(file => {
     const { data: meta, content: rawContent } = matter(fs.readFileSync(path.join(chaptersDir, file), 'utf-8'));
-    
-    // Esnek Slug Kontrolü (hem novel_slug hem novelSlug desteği)
-    const rawNovelSlug = meta.novel_slug || meta.novelSlug || '';
-    const cleanNovelSlug = slugify(rawNovelSlug);
-
     return {
       title: meta.title || 'İsimsiz Bölüm',
       slug: slugify(meta.slug || file.replace('.md', '')),
-      novelSlug: cleanNovelSlug,
-      novelTitle: novelsData[cleanNovelSlug] || 'Web Novel',
-      order: parseInt(meta.chapter_number || meta.order) || 0,
+      novelSlug: slugify(meta.novel_slug || ''),
+      novelTitle: novelsData[slugify(meta.novel_slug || '')] || 'Web Novel',
+      order: parseInt(meta.chapter_number) || 0,
       date: meta.date || new Date().toISOString(),
       translator_note: meta.translator_note ? marked.parse(meta.translator_note) : '',
       contentHtml: marked.parse(meta.body || rawContent)
@@ -105,38 +95,23 @@ function buildChapters() {
       nextSlug: chapters[i + 1] ? chapters[i + 1].slug : null
     };
     fs.writeFileSync(path.join(outputChaptersDir, `${ch.slug}.json`), JSON.stringify(finalJson, null, 2));
-    summaries.push({ 
-      title: ch.title, 
-      slug: ch.slug, 
-      novelSlug: ch.novelSlug, 
-      novelTitle: ch.novelTitle, 
-      order: ch.order, 
-      date: ch.date 
-    });
+    summaries.push({ title: ch.title, slug: ch.slug, novelSlug: ch.novelSlug, novelTitle: ch.novelTitle, order: ch.order, date: ch.date });
   });
   fs.writeFileSync(path.join(outputDir, 'chapters-index.json'), JSON.stringify(summaries, null, 2));
   console.log(`✅ ${chapters.length} bölüm derlendi.`);
 }
 
-// 3. STATİK DOSYALARI (SRC VE ADMIN) DIST İÇİNE KOPYALA
-function copyStaticFiles() {
+// SRC'Yİ DIST'E KOPYALA (Tasarım ve Görsellerin Yayınlanması İçin)
+function copySrc() {
   const src = path.join(__dirname, '../src');
   const dist = path.join(__dirname, '../dist');
-  
-  // SRC -> DIST
   if (fs.existsSync(src)) {
     fs.cpSync(src, dist, { recursive: true });
     console.log('✅ src klasörü dist içine kopyalandı.');
-  }
-
-  // ADMIN -> DIST/ADMIN (Decap CMS'in çalışması için şart!)
-  if (fs.existsSync(adminDir)) {
-    fs.cpSync(adminDir, distAdminDir, { recursive: true });
-    console.log('✅ admin klasörü dist/admin içine kopyalandı.');
   }
 }
 
 buildNovels();
 buildChapters();
-copyStaticFiles();
+copySrc();
 console.log('🎉 Build tamamlandı!');
