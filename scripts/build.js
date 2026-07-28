@@ -1,69 +1,58 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import matter from 'gray-matter';
+import { marked } from 'marked';
 
-// Yollar
+// ESM modülünde __dirname tanımı
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Yollar (Input ve Output)
 const chaptersDir = path.join(__dirname, '../content/chapters');
-const novelsDir = path.join(__dirname, '../content/novels');
-const outputDir = path.join(__dirname, '../src/content');
+const outputDir = path.join(__dirname, '../src/content/chapters');
 
-// Klasörleri Oluştur (Yoksa)
-if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
-const outputChaptersDir = path.join(outputDir, 'chapters');
-if (!fs.existsSync(outputChaptersDir)) fs.mkdirSync(outputChaptersDir, { recursive: true });
-
-// Basit Markdown -> HTML Dönüştürücü
-function parseMarkdown(mdText) {
-  return mdText
-    .split('\n\n')
-    .map(p => p.trim() ? `<p>${p.replace(/\n/g, '<br>')}</p>` : '')
-    .join('');
+// Çıktı klasörünü oluştur
+if (!fs.existsSync(outputDir)) {
+  fs.mkdirSync(outputDir, { recursive: true });
 }
 
-// Front-Matter (YAML metadata) Parse İşlemi
-function parseFrontMatter(fileContent) {
-  const match = fileContent.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) return { meta: {}, body: fileContent };
-
-  const metaLines = match[1].split('\n');
-  const meta = {};
-  metaLines.forEach(line => {
-    const [key, ...valueParts] = line.split(':');
-    if (key && valueParts.length) {
-      meta[key.trim()] = valueParts.join(':').trim().replace(/^['"]|['"]$/g, '');
-    }
-  });
-
-  return { meta, body: match[2] };
-}
-
-// 1. Bölümleri Derle
 function buildChapters() {
-  if (!fs.existsSync(chaptersDir)) return [];
+  if (!fs.existsSync(chaptersDir)) {
+    console.log('[Build] Henüz "content/chapters" dizini veya bölüm dosyası yok.');
+    return;
+  }
 
   const files = fs.readdirSync(chaptersDir);
   const chapters = [];
 
+  // 1. Tüm Markdown dosyalarını oku ve gray-matter / marked ile işle
   files.forEach(file => {
     if (!file.endsWith('.md')) return;
-    const rawContent = fs.readFileSync(path.join(chaptersDir, file), 'utf-8');
-    const { meta, body } = parseFrontMatter(rawContent);
 
-    const chapterData = {
+    const filePath = path.join(chaptersDir, file);
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+
+    // gray-matter ile YAML metadata ve içerik ayrıştırma
+    const { data: meta, content } = matter(fileContent);
+
+    // marked ile Markdown -> HTML dönüşümü
+    const htmlContent = marked.parse(content);
+
+    chapters.push({
       title: meta.title || 'İsimsiz Bölüm',
       slug: meta.slug || file.replace('.md', ''),
       novelSlug: meta.novelSlug || '',
       order: parseInt(meta.order) || 1,
       date: meta.date || new Date().toISOString(),
-      contentHtml: parseMarkdown(body)
-    };
-
-    chapters.push(chapterData);
+      contentHtml: htmlContent
+    });
   });
 
-  // Bölümleri sıraya diz
+  // 2. Bölümleri sıraya diz (order değerine göre)
   chapters.sort((a, b) => a.order - b.order);
 
-  // Her bölüm için prev/next bağlantılarını hesapla ve JSON olarak kaydet
+  // 3. Her bölüm için prev/next bağlantılarını hesaplayıp JSON üret
   chapters.forEach((ch, index) => {
     const prevChapter = chapters[index - 1];
     const nextChapter = chapters[index + 1];
@@ -74,15 +63,11 @@ function buildChapters() {
       nextSlug: nextChapter ? nextChapter.slug : null
     };
 
-    fs.writeFileSync(
-      path.join(outputChaptersDir, `${ch.slug}.json`),
-      JSON.stringify(finalJson, null, 2)
-    );
+    const outputPath = path.join(outputDir, `${ch.slug}.json`);
+    fs.writeFileSync(outputPath, JSON.stringify(finalJson, null, 2));
   });
 
-  console.log(`[Build] ${chapters.length} bölüm derlendi.`);
-  return chapters;
+  console.log(`\x1b[32m[Build Başarılı]\x1b[0m ${chapters.length} bölüm JSON formatına derlendi.`);
 }
 
-// Derlemeyi Çalıştır
 buildChapters();
