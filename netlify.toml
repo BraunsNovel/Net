@@ -1,15 +1,9 @@
 [build]
-  command = "node scripts/build.js"
+  command = "npm run build"
   publish = "dist"
 
-# Admin Paneli SPA Yönlendirmesi (Yenileme Hatasını Çözer)
+# Sadece Decap CMS Admin paneli için SPA yönlendirmesi
 [[redirects]]
   from = "/admin/*"
   to = "/admin/index.html"
-  status = 200
-
-# Ana Sayfa SPA Yönlendirmesi
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
   status = 200
