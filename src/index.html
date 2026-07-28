@@ -1,218 +1,53 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#A0522D" />
-  <meta name="description" content="Braun's Novel - Profesyonel web novel okuma platformu. En güncel çeviri novel ve light novel serileri." />
-  <meta name="keywords" content="web novel, light novel, novel oku, çeviri novel, manga, manhua" />
-  <meta name="author" content="Braun's Novel" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://braunsnovel.netlify.app/" />
-
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Braun's Novel - Profesyonel Novel Platformu" />
-  <meta property="og:description" content="En güncel çeviri novel ve light novel serileri. Profesyonel okuma deneyimi." />
-  <meta property="og:url" content="https://braunsnovel.netlify.app/" />
-  <meta property="og:site_name" content="Braun's Novel" />
-  <meta property="og:locale" content="tr_TR" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Braun's Novel" />
-  <meta name="twitter:description" content="Profesyonel web novel okuma platformu" />
-
-  <title>Braun's Novel - Profesyonel Novel Platformu</title>
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23A0522D'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.35em' font-family='Georgia' font-size='20' font-weight='900' fill='white'%3EB%3C/text%3E%3C/svg%3E" />
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700;900&family=Cormorant+Garamond:wght@600;700;900&display=swap" rel="stylesheet" />
-
-  <link rel="alternate" type="application/rss+xml" title="Braun's Novel - Yeni Bölümler" href="/rss.xml" />
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-
-  <link rel="stylesheet" href="css/style.css" />
-
-  <!-- Google Analytics (GA4) - ID'NİZİ YAZIN -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX');
-  </script>
-
-  <!-- Disqus - SHORTNAME'İNİZİ YAZIN -->
-  <script>
-    window.DISQUS_SHORTNAME = 'braunsnovel';
-  </script>
-
-  <!-- Tema Flash Önleme -->
-  <script>
-    (function() {
-      var theme = localStorage.getItem('brauns-theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braun's Novel - Profesyonel Web Novel Platformu</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="readingProgress" class="reading-progress" aria-hidden="true"></div>
-
-  <button id="backToTop" class="back-to-top" aria-label="Yukarı Çık">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="18 15 12 9 6 15"></polyline>
-    </svg>
-  </button>
-
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="container">
-      <div class="header-inner">
-        <a href="#/" class="logo" aria-label="Braun's Novel">
-          <span class="logo-icon">B</span>
-          <span class="logo-text">Braun's Novel</span>
-        </a>
-
-        <nav class="main-nav">
-          <a href="#/series">Seriler</a>
-          <a href="#/chapters">Bölümler</a>
-        </nav>
-
-        <div class="header-actions">
-          <div class="desktop-actions">
-            <button id="searchToggle" class="icon-btn" aria-label="Ara (Ctrl+K)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="m21 21-4.35-4.35"></path>
-              </svg>
-            </button>
-            <button id="filterToggle" class="icon-btn" aria-label="Filtrele">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-              </svg>
-            </button>
-            <button id="themeToggle" class="icon-btn" aria-label="Tema Değiştir">
-              <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="4"></circle>
-                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
-              </svg>
-              <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-            </button>
-          </div>
-          <button id="mobileMenuToggle" class="icon-btn mobile-menu-toggle" aria-label="Menü">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="3" x2="21" y1="12" y2="12"></line>
-              <line x1="3" x2="21" y1="6" y2="6"></line>
-              <line x1="3" x2="21" y1="18" y2="18"></line>
-            </svg>
-          </button>
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">Braun's Novel</a>
+            <div class="nav-links">
+                <a href="index.html" class="active">Ana Sayfa</a>
+                <a href="#novels-section">Noveller</a>
+                <a href="#latest-section">Son Bölümler</a>
+            </div>
         </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- MOBİL MENÜ -->
-  <div class="drawer-backdrop" id="drawerBackdrop"></div>
-  <div class="mobile-nav-drawer" id="mobileNavDrawer">
-    <div class="drawer-header">
-      <div class="logo" style="font-size:1.1rem;">
-        <span class="logo-icon" style="width:28px;height:28px;">B</span>
-        <span>Braun's Novel</span>
-      </div>
-      <button class="icon-btn" id="mobileMenuClose" type="button">×</button>
-    </div>
-    <nav class="mobile-nav-links">
-      <a href="#/series">📚 Seriler</a>
-      <a href="#/chapters">📖 Bölümler</a>
-      <button id="mobileSearchBtn" type="button">🔍 Ara</button>
-      <button id="mobileFilterBtn" type="button">🎯 Filtrele</button>
-      <button id="mobileThemeBtn" type="button">🌓 Tema</button>
     </nav>
-    <div class="drawer-footer">
-      <small>© 2026 Braun's Novel</small>
-    </div>
-  </div>
 
-  <!-- ARAMA MODAL -->
-  <div class="search-modal" id="searchModal" role="dialog" aria-label="Arama">
-    <div class="search-box">
-      <div class="search-input-wrap">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="m21 21-4.35-4.35"></path>
-        </svg>
-        <input id="searchInput" type="search" placeholder="Seri, bölüm veya yazar ara..." autocomplete="off" />
-      </div>
-      <div id="searchResults" class="search-results"></div>
-      <div class="search-hint">ESC ile kapat · ↑↓ gezin · ↵ seç · Ctrl+K aç</div>
-    </div>
-  </div>
-
-  <!-- FİLTRE MODAL -->
-  <div class="filter-modal" id="filterModal" role="dialog" aria-label="Filtrele">
-    <div class="filter-box">
-      <div class="filter-header">
-        <h2>Filtrele</h2>
-        <button class="icon-btn" id="filterClose" type="button" aria-label="Kapat">×</button>
-      </div>
-      <div class="filter-section">
-        <h3>Tür</h3>
-        <div class="filter-tags" id="genreTags"></div>
-      </div>
-      <div class="filter-section">
-        <h3>Durum</h3>
-        <div class="filter-tags" id="statusTags">
-          <span class="filter-tag" data-value="ongoing">Devam Ediyor</span>
-          <span class="filter-tag" data-value="completed">Tamamlandı</span>
-          <span class="filter-tag" data-value="hiatus">Beklemede</span>
-          <span class="filter-tag" data-value="dropped">Bırakıldı</span>
+    <header class="hero">
+        <div class="container">
+            <h1>En İyi Web Novelleri Tek Bir Yerde</h1>
+            <p>Profesyonel çeviriler, kesintisiz okuma deneyimi ve düzenli güncellemeler.</p>
         </div>
-      </div>
-      <button class="filter-apply" id="applyFilter">Uygula</button>
-    </div>
-  </div>
+    </header>
 
-  <!-- ANA İÇERİK -->
-  <main class="main-content">
-    <div class="container" id="app"></div>
-  </main>
+    <main class="container main-content">
+        <section id="novels-section" class="content-section">
+            <h2 class="section-title">📚 Popüler Noveller</h2>
+            <div id="novels-grid" class="novels-grid">
+                <p class="loading-text">Noveller yükleniyor...</p>
+            </div>
+        </section>
 
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="logo">
-            <span class="logo-icon">B</span>
-            <span>Braun's Novel</span>
-          </div>
-          <p>Profesyonel web novel okuma platformu. En güncel çeviriler, kesintisiz okuma deneyimi.</p>
-        </div>
-        <div class="footer-links">
-          <h4>Keşfet</h4>
-          <a href="#/series">Tüm Seriler</a>
-          <a href="#/chapters">Son Bölümler</a>
-          <a href="/rss.xml">RSS Feed</a>
-        </div>
-        <div class="footer-links">
-          <h4>Platform</h4>
-          <a href="#/series?status=ongoing">Devam Eden Seriler</a>
-          <a href="#/series?status=completed">Tamamlanan Seriler</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <div>© 2026 <strong>Braun's Novel</strong>. Tüm hakları saklıdır.</div>
-        <div class="footer-meta">Sevgiyle tasarlandı 🤎</div>
-      </div>
-    </div>
-  </footer>
+        <section id="latest-section" class="content-section">
+            <h2 class="section-title">🕒 Son Eklenen Bölümler</h2>
+            <ul id="latest-chapters-list" class="latest-chapters-list">
+                <p class="loading-text">Bölümler yükleniyor...</p>
+            </ul>
+        </section>
+    </main>
 
-  <script src="js/app.js"></script>
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Braun's Novel. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
