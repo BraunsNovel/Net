@@ -2,38 +2,35 @@ backend:
   name: git-gateway
   branch: main
 
-# DÜZELTİLDİ: Görseller doğrudan src içine kaydedilecek
-media_folder: "src/uploads" 
-# DÜZELTİLDİ: Sitede çağrılırken src kök klasör olacağı için başına /uploads yeterli
-public_folder: "/uploads" 
+# GÖRSEL YOLU DÜZELTİLDİ
+media_folder: "src/uploads"
+public_folder: "/uploads"
 
 collections:
   - name: "novels"
     label: "Noveller"
     folder: "content/novels"
     create: true
-    # DÜZELTME: Dosya adını başlıktan otomatik ve temiz üret
-    slug: "{{title}}" 
+    slug: "{{title}}"
     fields:
       - { label: "Novel Adı", name: "title", widget: "string" }
       - { label: "Orijinal Adı", name: "original_title", widget: "string", required: false }
       - { label: "Yazar", name: "author", widget: "string" }
       - { label: "Çevirmen", name: "translator", widget: "string" }
       - { label: "Kapak Resmi", name: "cover", widget: "image" }
-      - { label: "Türler (Etiketler)", name: "genres", widget: "list", default: ["Fantastik", "Macera"] }
+      - { label: "Türler", name: "genres", widget: "list", default: ["Fantastik"] }
       - { label: "Durum", name: "status", widget: "select", options: ["Devam Ediyor", "Tamamlandı", "Beklemede"] }
-      - { label: "Açıklama", name: "description", widget: "markdown" }
+      - { label: "Açıklama", name: "body", widget: "markdown" }
 
-  # 2. BÖLÜM KOLEKSİYONU
   - name: "chapters"
     label: "Bölümler"
     folder: "content/chapters"
     create: true
     slug: "{{novel_slug}}-bolum-{{chapter_number}}"
     fields:
-      - { label: "Novel Seçimi", name: "novel_slug", widget: "relation", collection: "novels", search_fields: ["title"], value_field: "slug", display_fields: ["title"] }
+      - { label: "Novel Seçimi (Slug)", name: "novel_slug", widget: "string", hint: "Novelin temiz slug'ını yazın (örn: solo-leyelim)" }
       - { label: "Bölüm Numarası", name: "chapter_number", widget: "number" }
       - { label: "Bölüm Başlığı", name: "title", widget: "string" }
       - { label: "Yayın Tarihi", name: "date", widget: "datetime" }
-      - { label: "Çevirmen Notu (Opsiyonel)", name: "translator_note", widget: "markdown", required: false }
+      - { label: "Çevirmen Notu", name: "translator_note", widget: "markdown", required: false }
       - { label: "Bölüm İçeriği", name: "body", widget: "markdown" }
