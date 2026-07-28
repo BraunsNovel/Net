@@ -1,143 +1,171 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
 :root {
-  --bg-color: #0d0e12;
-  --card-bg: #16181e;
-  --text-primary: #e6e8ee;
-  --text-secondary: #9095a2;
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
-  --border: #242731;
+  --bg: #0f1013;
+  --surface: #17181d;
+  --surface-hover: #1f2128;
+  --text: #f0f2f5;
+  --text-dim: #9499a8;
+  --accent: #818cf8;
+  --border: #262933;
+  --radius: 12px;
 }
 
 body {
-  background-color: var(--bg-color);
-  color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   margin: 0;
-  padding: 0;
+  line-height: 1.6;
 }
 
 .container {
-  max-width: 1100px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.25rem;
 }
 
-/* Header & Search */
+/* Üst Bar & Arama */
 .main-header {
-  background: var(--card-bg);
+  background: rgba(23, 24, 29, 0.8);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 1rem 0;
   position: sticky;
   top: 0;
   z-index: 100;
+  padding: 1rem 0;
 }
 
 .header-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 1.5rem;
 }
 
 .logo {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  color: var(--accent);
+  color: #fff;
   text-decoration: none;
+  letter-spacing: -0.02em;
 }
 
 .search-box {
   position: relative;
-  width: 100%;
-  max-width: 350px;
+  flex: 1;
+  max-width: 360px;
 }
 
 .search-box input {
   width: 100%;
-  padding: 0.6rem 1rem;
-  background: var(--bg-color);
+  background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text-primary);
+  border-radius: 20px;
+  padding: 0.6rem 1.2rem;
+  color: var(--text);
+  font-size: 0.9rem;
   outline: none;
-  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.search-box input:focus {
+  border-color: var(--accent);
 }
 
 .search-results-dropdown {
   position: absolute;
-  top: 110%;
+  top: 120%;
   left: 0;
   right: 0;
-  background: var(--card-bg);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  max-height: 300px;
-  overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.4);
 }
-
-.hidden { display: none; }
 
 .search-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  color: var(--text-primary);
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  color: var(--text);
   text-decoration: none;
   border-bottom: 1px solid var(--border);
 }
 
-.search-item:hover { background: var(--border); }
-.search-item-thumb { width: 36px; height: 48px; object-fit: cover; border-radius: 4px; }
-.search-item-title { font-weight: 600; display: block; }
-.search-item-sub { font-size: 0.8rem; color: var(--text-secondary); }
+.search-item:hover { background: var(--surface-hover); }
+.search-item-thumb { width: 32px; height: 44px; object-fit: cover; border-radius: 4px; }
 
-/* Novels Grid & Chips */
-.section { margin: 2rem 0; }
-.novels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem; }
+/* Tür Çipleri */
+.genres-chips {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.genre-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.genre-chip.active, .genre-chip:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Grid & Kartlar */
+.section { margin: 3rem 0; }
+.section h2 { font-size: 1.25rem; margin-bottom: 1.25rem; font-weight: 600; }
+
+.novels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
 
 .novel-card {
-  background: var(--card-bg);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   overflow: hidden;
   text-decoration: none;
   color: inherit;
   transition: transform 0.2s, border-color 0.2s;
 }
 
-.novel-card:hover { transform: translateY(-4px); border-color: var(--accent); }
-.novel-card-cover { width: 100%; height: 260px; object-fit: cover; }
-.novel-card-placeholder { width: 100%; height: 260px; display: flex; align-items: center; justify-content: center; background: var(--border); font-size: 3rem; }
-.novel-card-details { padding: 1rem; }
-.novel-card-title { font-size: 1.1rem; margin: 0 0 0.25rem 0; }
-.novel-card-orig { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem; }
-
-.genres-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.genre-chip {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  cursor: pointer;
+.novel-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
 }
-.genre-chip.active, .genre-chip:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* Chapters List */
-.chapters-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.novel-card-cover { width: 100%; height: 250px; object-fit: cover; }
+.novel-card-details { padding: 1rem; }
+.novel-card-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+
+/* Son Bölümler */
+.chapters-list { display: flex; flex-direction: column; gap: 0.6rem; }
 .chapter-card {
-  background: var(--card-bg);
+  background: var(--surface);
   border: 1px solid var(--border);
-  padding: 0.8rem 1.2rem;
-  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
   display: flex;
   justify-content: space-between;
   align-items: center;
   text-decoration: none;
   color: inherit;
+  transition: border-color 0.2s;
 }
 .chapter-card:hover { border-color: var(--accent); }
-.chapter-novel-title { font-size: 0.8rem; color: var(--accent); display: block; }
-.chapter-date { font-size: 0.8rem; color: var(--text-secondary); }
+.chapter-novel-title { font-size: 0.8rem; color: var(--accent); margin-bottom: 0.2rem; }
+.chapter-date { font-size: 0.8rem; color: var(--text-dim); }
