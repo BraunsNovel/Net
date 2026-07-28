@@ -1,17 +1,9 @@
 [build]
-  command = "npm install && npm run build"
-  publish = "dist"
+  command = "node scripts/build.js"
+  publish = "dist" # Veya ön yüz dosyalarının olduğu klasör (örn: "public" veya "src")
 
-[build.environment]
-  NODE_VERSION = "20"
-
+# Admin panelinin düzgün çalışması için yönlendirme
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/admin/*"
+  to = "/admin/index.html"
   status = 200
-
-[identity]
-  enabled = true
-
-[identity.config]
-  registration = "invite"
