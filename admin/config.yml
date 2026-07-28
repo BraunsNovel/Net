@@ -1,36 +1,37 @@
 backend:
   name: git-gateway
-  branch: main
+  branch: main # GitHub repo'ndaki ana dalın adı
 
-media_folder: "src/assets/uploads"
-public_folder: "/assets/uploads"
+media_folder: "static/uploads" # Yüklenen kapak resimleri buraya kaydedilir
+public_folder: "/uploads" # Sitede gösterilirken bu yol kullanılır
 
 collections:
-  # 1. ROMAN BİLGİLERİ (Kapak Resmi, Açıklama, Türler)
+  # 1. NOVEL KOLEKSİYONU
   - name: "novels"
-    label: "Romanlar"
+    label: "Noveller"
     folder: "content/novels"
     create: true
     slug: "{{slug}}"
     fields:
-      - { label: "Roman Adı", name: "title", widget: "string" }
-      - { label: "Slug (URL Kısaltması)", name: "slug", widget: "string" }
-      - { label: "Kapak Görseli", name: "cover", widget: "image", required: false }
-      - { label: "Yazar", name: "author", widget: "string", default: "An Ri" }
-      - { label: "Durum", name: "status", widget: "select", options: ["Devam Ediyor", "Tamamlandı", "Askıda"] }
-      - { label: "Özet / Açıklama", name: "description", widget: "text" }
-      - { label: "Etiketler / Türler", name: "tags", widget: "list", default: ["Fantezi", "Aksiyon"] }
+      - { label: "Novel Adı", name: "title", widget: "string" }
+      - { label: "Orijinal Adı", name: "original_title", widget: "string", required: false }
+      - { label: "Yazar", name: "author", widget: "string" }
+      - { label: "Çevirmen", name: "translator", widget: "string" }
+      - { label: "Kapak Resmi", name: "cover", widget: "image" }
+      - { label: "Türler (Etiketler)", name: "genres", widget: "list", default: ["Fantastik", "Macera"] }
+      - { label: "Durum", name: "status", widget: "select", options: ["Devam Ediyor", "Tamamlandı", "Beklemede"] }
+      - { label: "Açıklama", name: "description", widget: "markdown" }
 
-  # 2. BÖLÜMLER (Markdown Formatında İçerik)
+  # 2. BÖLÜM KOLEKSİYONU
   - name: "chapters"
     label: "Bölümler"
     folder: "content/chapters"
     create: true
-    slug: "{{slug}}"
+    slug: "{{novel_slug}}-bolum-{{chapter_number}}"
     fields:
+      - { label: "Novel Seçimi", name: "novel_slug", widget: "relation", collection: "novels", search_fields: ["title"], value_field: "slug", display_fields: ["title"] }
+      - { label: "Bölüm Numarası", name: "chapter_number", widget: "number" }
       - { label: "Bölüm Başlığı", name: "title", widget: "string" }
-      - { label: "Ait Olduğu Roman Slug'ı", name: "novelSlug", widget: "string" }
-      - { label: "Bölüm Numarası/Sırası", name: "order", widget: "number", value_type: "int" }
-      - { label: "Bölüm Slug'ı (örn: bolum-1)", name: "slug", widget: "string" }
       - { label: "Yayın Tarihi", name: "date", widget: "datetime" }
+      - { label: "Çevirmen Notu (Opsiyonel)", name: "translator_note", widget: "markdown", required: false }
       - { label: "Bölüm İçeriği", name: "body", widget: "markdown" }
