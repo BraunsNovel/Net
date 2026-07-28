@@ -18,7 +18,7 @@ if (!fs.existsSync(outputChaptersDir)) {
   fs.mkdirSync(outputChaptersDir, { recursive: true });
 }
 
-// Tüm novelleri önce yükle (Bölümlere novel başlığını ekleyebilmek için)
+// Tüm novelleri önce yükle (Bölümlere novel başlığını eşleştirmek için)
 let novelsData = {};
 if (fs.existsSync(novelsDir)) {
   const novelFiles = fs.readdirSync(novelsDir).filter(f => f.endsWith('.md'));
@@ -31,7 +31,7 @@ if (fs.existsSync(novelsDir)) {
   });
 }
 
-// Bölümleri Derle
+// 1. BÖLÜMLERİ DERLE
 function buildChapters() {
   if (!fs.existsSync(chaptersDir)) {
     console.log('⚠️ "content/chapters" dizini bulunamadı.');
@@ -55,17 +55,15 @@ function buildChapters() {
       title: meta.title || 'İsimsiz Bölüm',
       slug: file.replace('.md', ''),
       novelSlug: novelSlug,
-      novelTitle: novelsData[novelSlug] || 'Web Novel', // Reader.js için kritik!
+      novelTitle: novelsData[novelSlug] || 'Web Novel',
       order: chapterNumber,
       date: meta.date || new Date().toISOString(),
       translator_note: meta.translator_note ? marked.parse(meta.translator_note) : '',
-      contentHtml: marked.parse(meta.body || rawContent) // CMS 'body' kullanır
+      contentHtml: marked.parse(meta.body || rawContent)
     });
   });
 
-  // Bölümleri numaraya göre sırala
   chapters.sort((a, b) => a.order - b.order);
-
   const chapterSummaryList = [];
 
   chapters.forEach((ch, index) => {
@@ -78,11 +76,9 @@ function buildChapters() {
       nextSlug: nextChapter ? nextChapter.slug : null
     };
 
-    // Her bölüm için ayrı JSON (reader.js okur)
     const outputPath = path.join(outputChaptersDir, `${ch.slug}.json`);
     fs.writeFileSync(outputPath, JSON.stringify(finalChapterJson, null, 2));
 
-    // Ana liste için özet
     chapterSummaryList.push({
       title: ch.title,
       slug: ch.slug,
@@ -93,14 +89,11 @@ function buildChapters() {
     });
   });
 
-  fs.writeFileSync(
-    path.join(outputDir, 'chapters-index.json'),
-    JSON.stringify(chapterSummaryList, null, 2)
-  );
+  fs.writeFileSync(path.join(outputDir, 'chapters-index.json'), JSON.stringify(chapterSummaryList, null, 2));
   console.log(`✅ ${chapters.length} bölüm başarıyla derlendi.`);
 }
 
-// Novelleri Derle
+// 2. NOVELLERİ DERLE
 function buildNovels() {
   if (!fs.existsSync(novelsDir)) {
     console.log('⚠️ "content/novels" dizini bulunamadı.');
@@ -130,12 +123,26 @@ function buildNovels() {
     });
   });
 
-  fs.writeFileSync(
-    path.join(outputDir, 'novels-index.json'),
-    JSON.stringify(novels, null, 2)
-  );
+  fs.writeFileSync(path.join(outputDir, 'novels-index.json'), JSON.stringify(novels, null, 2));
   console.log(`✅ ${novels.length} novel başarıyla derlendi.`);
 }
 
+// 3. SRC KLASÖRÜNÜ DIST'E KOPYALA (Netlify Yayınlaması İçin Kritik!)
+function copySrcToDist() {
+  const srcDir = path.join(__dirname, '../src');
+  const distDir = path.join(__dirname, '../dist');
+  
+  if (fs.existsSync(srcDir)) {
+    // Node.js 16.7.0+ ile gelen yerel kopyalama fonksiyonu
+    fs.cpSync(srcDir, distDir, { recursive: true });
+    console.log('✅ src klasöründeki tasarım dosyaları dist klasörüne kopyalandı.');
+  } else {
+    console.log('⚠️ src klasörü bulunamadı, kopyalama atlandı.');
+  }
+}
+
+// Çalıştır
 buildChapters();
 buildNovels();
+copySrcToDist();
+console.log('🎉 Build işlemi tamamladı! dist klasörü yayına hazır.');
