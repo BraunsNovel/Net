@@ -1,9 +1,11 @@
 backend:
   name: git-gateway
-  branch: main # GitHub repo'ndaki ana dalın adı
+  branch: main
 
-media_folder: "static/uploads" # Yüklenen kapak resimleri buraya kaydedilir
-public_folder: "/uploads" # Sitede gösterilirken bu yol kullanılır
+# DÜZELTİLDİ: Görseller doğrudan src içine kaydedilecek
+media_folder: "src/uploads" 
+# DÜZELTİLDİ: Sitede çağrılırken src kök klasör olacağı için başına /uploads yeterli
+public_folder: "/uploads" 
 
 collections:
   # 1. NOVEL KOLEKSİYONU
