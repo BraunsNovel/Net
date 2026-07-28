@@ -1,80 +1,141 @@
-const fs = require('fs');
-const path = require('path');
-const matter = require('gray-matter');
-const { marked } = require('marked');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import matter from 'gray-matter';
+import { marked } from 'marked';
 
-// Çıktı klasörünü oluştur
-const outputDir = path.join(__dirname, '../dist/data');
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Girdi ve Çıktı Dizinleri (Netlify uyumlu: dist klasörüne yazıyoruz)
+const chaptersDir = path.join(__dirname, '../content/chapters');
+const novelsDir = path.join(__dirname, '../content/novels');
+const outputDir = path.join(__dirname, '../dist/content');
+const outputChaptersDir = path.join(__dirname, '../dist/content/chapters');
+
+// Çıktı klasörlerini oluştur
+if (!fs.existsSync(outputChaptersDir)) {
+  fs.mkdirSync(outputChaptersDir, { recursive: true });
 }
 
-// 1. Novelleri İşle
-const novelsDir = path.join(__dirname, '../content/novels');
-const novels = [];
-
+// Tüm novelleri önce yükle (Bölümlere novel başlığını ekleyebilmek için)
+let novelsData = {};
 if (fs.existsSync(novelsDir)) {
-  const files = fs.readdirSync(novelsDir).filter(f => f.endsWith('.md'));
-  files.forEach(file => {
+  const novelFiles = fs.readdirSync(novelsDir).filter(f => f.endsWith('.md'));
+  novelFiles.forEach(file => {
     const filePath = path.join(novelsDir, file);
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const { data, content } = matter(fileContent);
-    
-    novels.push({
-      slug: file.replace('.md', ''),
-      title: data.title,
-      original_title: data.original_title || '',
-      author: data.author,
-      translator: data.translator,
-      cover: data.cover,
-      genres: data.genres || [],
-      status: data.status,
-      description: marked.parse(content), // Markdown açıklamayı HTML'e çevir
-    });
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const { data: meta } = matter(fileContent);
+    const slug = file.replace('.md', '');
+    novelsData[slug] = meta.title || 'İsimsiz Novel';
   });
 }
 
-// 2. Bölümleri İşle ve Novellere Bağla
-const chaptersDir = path.join(__dirname, '../content/chapters');
-const chaptersByNovel = {};
+// Bölümleri Derle
+function buildChapters() {
+  if (!fs.existsSync(chaptersDir)) {
+    console.log('⚠️ "content/chapters" dizini bulunamadı.');
+    fs.writeFileSync(path.join(outputDir, 'chapters-index.json'), JSON.stringify([], null, 2));
+    return;
+  }
 
-if (fs.existsSync(chaptersDir)) {
   const files = fs.readdirSync(chaptersDir).filter(f => f.endsWith('.md'));
+  const chapters = [];
+
   files.forEach(file => {
     const filePath = path.join(chaptersDir, file);
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const { data, content } = matter(fileContent);
-    
-    const novelSlug = data.novel_slug;
-    if (!chaptersByNovel[novelSlug]) {
-      chaptersByNovel[novelSlug] = [];
-    }
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const { data: meta, content: rawContent } = matter(fileContent);
 
-    chaptersByNovel[novelSlug].push({
+    // CMS'den gelen alan adları: novel_slug, chapter_number, body
+    const novelSlug = meta.novel_slug || '';
+    const chapterNumber = parseInt(meta.chapter_number) || 0;
+    
+    chapters.push({
+      title: meta.title || 'İsimsiz Bölüm',
       slug: file.replace('.md', ''),
-      chapter_number: data.chapter_number,
-      title: data.title,
-      date: data.date,
-      translator_note: data.translator_note ? marked.parse(data.translator_note) : '',
-      content: marked.parse(content), // Bölüm içeriğini HTML'e çevir
+      novelSlug: novelSlug,
+      novelTitle: novelsData[novelSlug] || 'Web Novel', // Reader.js için kritik!
+      order: chapterNumber,
+      date: meta.date || new Date().toISOString(),
+      translator_note: meta.translator_note ? marked.parse(meta.translator_note) : '',
+      contentHtml: marked.parse(meta.body || rawContent) // CMS 'body' kullanır
     });
   });
+
+  // Bölümleri numaraya göre sırala
+  chapters.sort((a, b) => a.order - b.order);
+
+  const chapterSummaryList = [];
+
+  chapters.forEach((ch, index) => {
+    const prevChapter = chapters[index - 1];
+    const nextChapter = chapters[index + 1];
+
+    const finalChapterJson = {
+      ...ch,
+      prevSlug: prevChapter ? prevChapter.slug : null,
+      nextSlug: nextChapter ? nextChapter.slug : null
+    };
+
+    // Her bölüm için ayrı JSON (reader.js okur)
+    const outputPath = path.join(outputChaptersDir, `${ch.slug}.json`);
+    fs.writeFileSync(outputPath, JSON.stringify(finalChapterJson, null, 2));
+
+    // Ana liste için özet
+    chapterSummaryList.push({
+      title: ch.title,
+      slug: ch.slug,
+      novelSlug: ch.novelSlug,
+      novelTitle: ch.novelTitle,
+      order: ch.order,
+      date: ch.date
+    });
+  });
+
+  fs.writeFileSync(
+    path.join(outputDir, 'chapters-index.json'),
+    JSON.stringify(chapterSummaryList, null, 2)
+  );
+  console.log(`✅ ${chapters.length} bölüm başarıyla derlendi.`);
 }
 
-// Bölümleri numarasına göre sırala (Küçükten büyüğe)
-for (const novelSlug in chaptersByNovel) {
-  chaptersByNovel[novelSlug].sort((a, b) => a.chapter_number - b.chapter_number);
+// Novelleri Derle
+function buildNovels() {
+  if (!fs.existsSync(novelsDir)) {
+    console.log('⚠️ "content/novels" dizini bulunamadı.');
+    fs.writeFileSync(path.join(outputDir, 'novels-index.json'), JSON.stringify([], null, 2));
+    return;
+  }
+
+  const files = fs.readdirSync(novelsDir).filter(f => f.endsWith('.md'));
+  const novels = [];
+
+  files.forEach(file => {
+    const filePath = path.join(novelsDir, file);
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const { data: meta, content } = matter(fileContent);
+    const slug = file.replace('.md', '');
+
+    novels.push({
+      title: meta.title || 'İsimsiz Roman',
+      slug: slug,
+      original_title: meta.original_title || '',
+      author: meta.author || 'An Ri',
+      translator: meta.translator || 'Braun',
+      cover: meta.cover || '',
+      genres: meta.genres || [],
+      status: meta.status || 'Devam Ediyor',
+      description: marked.parse(content)
+    });
+  });
+
+  fs.writeFileSync(
+    path.join(outputDir, 'novels-index.json'),
+    JSON.stringify(novels, null, 2)
+  );
+  console.log(`✅ ${novels.length} novel başarıyla derlendi.`);
 }
 
-// 3. JSON Dosyalarını Yaz
-fs.writeFileSync(
-  path.join(outputDir, 'novels.json'),
-  JSON.stringify(novels, null, 2)
-);
-
-fs.writeFileSync(
-  path.join(outputDir, 'chapters.json'),
-  JSON.stringify(chaptersByNovel, null, 2)
-);
-
-console.log('✅ Build tamamlandı! Veriler dist/data/ klasörüne yazıldı.');
+buildChapters();
+buildNovels();
