@@ -2,34 +2,41 @@ backend:
   name: git-gateway
   branch: main
 
-media_folder: "src/uploads"
+media_folder: "static/uploads"
 public_folder: "/uploads"
 
 collections:
   - name: "novels"
-    label: "Noveller"
+    label: "Romanlar"
     folder: "content/novels"
     create: true
-    slug: "{{title}}"
+    slug: "{{slug}}"
     fields:
-      - { label: "Novel Adı", name: "title", widget: "string" }
-      - { label: "Orijinal Adı", name: "original_title", widget: "string", required: false }
-      - { label: "Yazar", name: "author", widget: "string" }
-      - { label: "Çevirmen", name: "translator", widget: "string" }
-      - { label: "Kapak Resmi", name: "cover", widget: "image" }
+      - { label: "Roman Adı", name: "title", widget: "string" }
+      - { label: "Orijinal / Alternatif Adı", name: "original_title", widget: "string", required: false }
+      - { label: "Slug (URL Metni)", name: "slug", widget: "string" }
+      - { label: "Yazar", name: "author", widget: "string", default: "Anonim" }
+      - { label: "Çevirmen", name: "translator", widget: "string", default: "An Ri" }
+      - { label: "Kapak Görseli", name: "cover", widget: "image", required: false }
+      - { label: "Kapak Baskın Rengi (Hex Code)", name: "cover_bg", widget: "color", default: "#1e1e24", required: false }
+      - { label: "Yayın Yılı", name: "release_year", widget: "number", required: false, value_type: "int" }
+      - { label: "Durum", name: "status", widget: "select", options: ["Devam Ediyor", "Tamamlandı", "Beklemede", "Askıda"] }
       - { label: "Türler", name: "genres", widget: "list", default: ["Fantastik"] }
-      - { label: "Durum", name: "status", widget: "select", options: ["Devam Ediyor", "Tamamlandı", "Beklemede"] }
-      - { label: "Açıklama", name: "body", widget: "markdown" }
+      - { label: "Öne Çıkarılan Roman mı?", name: "featured", widget: "boolean", default: false }
+      - { label: "SEO Açıklaması", name: "seo_description", widget: "text", required: false, hint: "Google aramalarında görünecek kısa açıklama." }
+      - { label: "SEO Anahtar Kelimeler", name: "seo_keywords", widget: "string", required: false, hint: "Virgülle ayırın (örn: web novel, aksiyon, dark fantasy)" }
+      - { label: "Özet / Detaylı Açıklama", name: "body", widget: "markdown" }
 
   - name: "chapters"
     label: "Bölümler"
     folder: "content/chapters"
     create: true
-    slug: "{{novel_slug}}-bolum-{{chapter_number}}"
+    slug: "{{slug}}"
     fields:
-      - { label: "Novel Seçimi (Slug)", name: "novel_slug", widget: "string", hint: "Novelin temiz slug'ını yazın (örn: solo-leyelim)" }
-      - { label: "Bölüm Numarası", name: "chapter_number", widget: "number" }
       - { label: "Bölüm Başlığı", name: "title", widget: "string" }
+      - { label: "Ait Olduğu Roman Slug'ı", name: "novelSlug", widget: "string" }
+      - { label: "Bölüm Sırası", name: "order", widget: "number", value_type: "int" }
+      - { label: "Bölüm Slug'ı (örn: solo-leyelim-bolum-1)", name: "slug", widget: "string" }
       - { label: "Yayın Tarihi", name: "date", widget: "datetime" }
       - { label: "Çevirmen Notu", name: "translator_note", widget: "markdown", required: false }
       - { label: "Bölüm İçeriği", name: "body", widget: "markdown" }
