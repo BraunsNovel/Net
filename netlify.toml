@@ -1,9 +1,15 @@
 [build]
   command = "node scripts/build.js"
-  publish = "dist" # Veya ön yüz dosyalarının olduğu klasör (örn: "public" veya "src")
+  publish = "dist"
 
-# Admin panelinin düzgün çalışması için yönlendirme
+# Admin panelinin SPA yönlendirmesi
 [[redirects]]
   from = "/admin/*"
   to = "/admin/index.html"
+  status = 200
+
+# Ön yüz uygulamasının (index.html) SPA yönlendirmesi
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
