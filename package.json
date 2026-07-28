@@ -4,7 +4,7 @@
   "description": "Braun's Novel - Profesyonel Web Novel Okuma Platformu",
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.js && cp -r src/* dist/",
+    "build": "node scripts/build.js",
     "dev": "node scripts/build.js && npx serve dist"
   },
   "dependencies": {
