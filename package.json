@@ -1,7 +1,6 @@
 {
   "name": "brauns-novel",
   "version": "1.0.0",
-  "description": "Braun's Novel - Profesyonel Web Novel Okuma Platformu",
   "type": "module",
   "scripts": {
     "build": "node scripts/build.js",
