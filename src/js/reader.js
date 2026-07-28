@@ -1,108 +1,167 @@
-document.addEventListener('DOMContentLoaded', () => {
-  // DOM Elemanları
-  const body = document.body;
-  const contentArea = document.getElementById('chapter-content');
-  const novelTitleEl = document.getElementById('novel-title');
-  const chapterTitleEl = document.getElementById('chapter-title');
-  const prevBtn = document.getElementById('prev-chapter-btn');
-  const nextBtn = document.getElementById('next-chapter-btn');
-  const fontFamilyBtn = document.getElementById('font-family-toggle');
-  
-  // Varsayılan Ayarlar ve LocalStorage Yüklemesi
-  let fontSize = parseInt(localStorage.getItem('reader_font_size')) || 18;
-  let currentTheme = localStorage.getItem('reader_theme') || 'theme-dark';
-  let fontFamily = localStorage.getItem('reader_font_family') || 'serif';
+// URL'den bölüm slug'ını al (örn: ?chapter=novel-adi-bolum-1)
+const urlParams = new URLSearchParams(window.location.search);
+const chapterSlug = urlParams.get('chapter');
 
-  // Ayarları Uygula
-  applyTheme(currentTheme);
-  applyFontSize(fontSize);
-  applyFontFamily(fontFamily);
+// DOM Elementleri
+const chapterTitleEl = document.getElementById('chapterTitle');
+const novelTitleEl = document.getElementById('novelTitle');
+const translatorNoteEl = document.getElementById('translatorNote');
+const chapterContentEl = document.getElementById('chapterContent');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progressBar = document.getElementById('progressBar');
 
-  // --- TEMA VE AYAR YÖNETİMİ ---
-  function applyTheme(themeName) {
-    body.classList.remove('theme-dark', 'theme-light', 'theme-sepia');
-    body.classList.add(themeName);
-    localStorage.setItem('reader_theme', themeName);
-  }
-
-  function applyFontSize(size) {
-    fontSize = Math.min(Math.max(size, 14), 26); // Min 14px, Max 26px
-    contentArea.style.fontSize = `${fontSize}px`;
-    localStorage.setItem('reader_font_size', fontSize);
-  }
-
-  function applyFontFamily(family) {
-    if (family === 'serif') {
-      contentArea.classList.remove('font-sans');
-      contentArea.classList.add('font-serif');
-      fontFamilyBtn.innerText = 'Serif';
-    } else {
-      contentArea.classList.remove('font-serif');
-      contentArea.classList.add('font-sans');
-      fontFamilyBtn.innerText = 'Sans';
+// 1. Bölüm Verisini Yükle
+async function loadChapter() {
+    if (!chapterSlug) {
+        chapterContentEl.innerHTML = '<p>Bölüm bulunamadı.</p>';
+        return;
     }
-    fontFamily = family;
-    localStorage.setItem('reader_font_family', family);
-  }
 
-  // Dinleyiciler
-  document.querySelectorAll('.theme-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => applyTheme(e.target.dataset.theme));
-  });
-
-  document.getElementById('font-increase').addEventListener('click', () => applyFontSize(fontSize + 1));
-  document.getElementById('font-decrease').addEventListener('click', () => applyFontSize(fontSize - 1));
-  fontFamilyBtn.addEventListener('click', () => applyFontFamily(fontFamily === 'serif' ? 'sans' : 'serif'));
-
-  // --- İÇERİK YÜKLEME SİMÜLASYONU VE PARSER ---
-  const urlParams = new URLSearchParams(window.location.search);
-  const chapterSlug = urlParams.get('slug') || 'bolum-1';
-
-  loadChapterData(chapterSlug);
-
-  async function loadChapterData(slug) {
     try {
-      // CMS verisine veya JSON çıktısına istek atılır
-      // Not: Build adımı sonrasında üretilen içerik dizininden çekilir
-      const response = await fetch(`/content/chapters/${slug}.json`);
-      if (!response.ok) throw new Error('Bölüm bulunamadı.');
-      
-      const data = await response.json();
+        // Build.js tarafından oluşturulan JSON yolunu kullanıyoruz
+        const response = await fetch(`/content/chapters/${chapterSlug}.json`);
+        if (!response.ok) throw new Error('Bölüm yüklenemedi');
+        
+        const data = await response.json();
 
-      document.title = `${data.title} | ${data.novelTitle}`;
-      novelTitleEl.innerText = data.novelTitle || 'Web Novel';
-      chapterTitleEl.innerText = data.title;
-      contentArea.innerHTML = data.contentHtml;
+        // Başlıkları güncelle
+        document.title = `${data.title} - ${data.novelTitle}`;
+        chapterTitleEl.textContent = data.title;
+        novelTitleEl.textContent = data.novelTitle;
 
-      // Gezinti Butonları
-      if (data.prevSlug) {
-        prevBtn.href = `read.html?slug=${data.prevSlug}`;
-        prevBtn.classList.remove('disabled');
-      }
-      if (data.nextSlug) {
-        nextBtn.href = `read.html?slug=${data.nextSlug}`;
-        nextBtn.classList.remove('disabled');
-      }
+        // Çevirmen notu varsa göster
+        if (data.translator_note) {
+            translatorNoteEl.innerHTML = `<strong>Çevirmen Notu:</strong><br>${data.translator_note}`;
+            translatorNoteEl.classList.remove('hidden');
+        }
 
-      // Okuma Konumunu Hatırla
-      restoreScrollPosition(slug);
-      window.addEventListener('scroll', () => saveScrollPosition(slug));
+        // İçeriği yerleştir
+        chapterContentEl.innerHTML = data.contentHtml;
 
-    } catch (err) {
-      contentArea.innerHTML = `<p class="error-text">Bölüm içeriği yüklenirken bir hata oluştu veya henüz yayınlanmadı.</p>`;
+        // Önceki/Sonraki butonlarını ayarla
+        if (data.prevSlug) {
+            prevBtn.href = `read.html?chapter=${data.prevSlug}`;
+            prevBtn.classList.remove('disabled');
+        }
+        if (data.nextSlug) {
+            nextBtn.href = `read.html?chapter=${data.nextSlug}`;
+            nextBtn.classList.remove('disabled');
+        }
+
+        // Sayfa yüklendiğinde kaydırma pozisyonunu geri yükle
+        restoreScrollPosition();
+
+    } catch (error) {
+        console.error(error);
+        chapterContentEl.innerHTML = '<p>Bu bölüm yüklenirken bir hata oluştu.</p>';
     }
-  }
+}
 
-  function saveScrollPosition(slug) {
-    const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
-    localStorage.setItem(`scroll_${slug}`, scrollPercent);
-  }
-
-  function restoreScrollPosition(slug) {
-    const savedPercent = localStorage.getItem(`scroll_${slug}`);
-    if (savedPercent) {
-      const targetScroll = parseFloat(savedPercent) * (document.documentElement.scrollHeight - window.innerHeight);
-      window.scrollTo({ top: targetScroll, behavior: 'smooth' });
-    }
-  }
+// 2. Okuma İlerleme Çubuğu
+window.addEventListener('scroll', () => {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    progressBar.style.width = scrolled + "%";
+    
+    // Kaydırma pozisyonunu kaydet (Her 500ms'de bir yapmak daha performanslıdır, ama basitlik için burada)
+    localStorage.setItem(`scroll_${chapterSlug}`, winScroll);
 });
+
+function restoreScrollPosition() {
+    const savedScroll = localStorage.getItem(`scroll_${chapterSlug}`);
+    if (savedScroll) {
+        window.scrollTo(0, parseInt(savedScroll));
+    }
+}
+
+// 3. Ayarlar Paneli ve LocalStorage Yönetimi
+const settingsToggle = document.getElementById('settingsToggle');
+const settingsPanel = document.getElementById('settingsPanel');
+
+settingsToggle.addEventListener('click', () => {
+    settingsPanel.classList.toggle('hidden');
+});
+
+// Dışarı tıklandığında paneli kapat
+document.addEventListener('click', (e) => {
+    if (!settingsPanel.contains(e.target) && e.target !== settingsToggle) {
+        settingsPanel.classList.add('hidden');
+    }
+});
+
+// Tema Değiştirme
+const themeBtns = document.querySelectorAll('.theme-btn');
+themeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const theme = btn.dataset.theme;
+        document.body.className = document.body.className.replace(/theme-\w+/, theme);
+        themeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        localStorage.setItem('reader_theme', theme);
+    });
+});
+
+// Font Değiştirme
+const fontBtns = document.querySelectorAll('.font-btn');
+fontBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const font = btn.dataset.font;
+        document.body.className = document.body.className.replace(/font-\w+/, font);
+        fontBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        localStorage.setItem('reader_font', font);
+    });
+});
+
+// Yazı Boyutu Değiştirme
+let currentFontSize = parseInt(localStorage.getItem('reader_font_size')) || 18;
+const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+fontSizeDisplay.textContent = currentFontSize;
+chapterContentEl.style.fontSize = `${currentFontSize}px`;
+
+document.getElementById('increaseFont').addEventListener('click', () => {
+    if (currentFontSize < 24) {
+        currentFontSize += 2;
+        applyFontSize();
+    }
+});
+
+document.getElementById('decreaseFont').addEventListener('click', () => {
+    if (currentFontSize > 14) {
+        currentFontSize -= 2;
+        applyFontSize();
+    }
+});
+
+function applyFontSize() {
+    chapterContentEl.style.fontSize = `${currentFontSize}px`;
+    fontSizeDisplay.textContent = currentFontSize;
+    localStorage.setItem('reader_font_size', currentFontSize);
+}
+
+// Sayfa yüklendiğinde kayıtlı ayarları uygula
+function loadSettings() {
+    const savedTheme = localStorage.getItem('reader_theme') || 'theme-light';
+    const savedFont = localStorage.getItem('reader_font') || 'font-sans';
+    
+    document.body.classList.add(savedTheme, savedFont);
+    
+    // Butonların aktif sınıfını güncelle
+    document.querySelector(`[data-theme="${savedTheme}"]`)?.classList.add('active');
+    document.querySelector(`[data-font="${savedFont}"]`)?.classList.add('active');
+}
+
+// 4. Klavye Desteği (Sağ/Sol Ok Tuşları)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' && !nextBtn.classList.contains('disabled')) {
+        window.location.href = nextBtn.href;
+    } else if (e.key === 'ArrowLeft' && !prevBtn.classList.contains('disabled')) {
+        window.location.href = prevBtn.href;
+    }
+});
+
+// Başlat
+loadSettings();
+loadChapter();
