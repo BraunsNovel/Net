@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bölüm Okunuyor | Braun Novel</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+</head>
+<body class="reader-body theme-dark">
+
+  <!-- Üst Kontrol Barı -->
+  <header class="reader-header">
+    <div class="reader-nav-left">
+      <a href="index.html" class="back-btn" aria-label="Ana Sayfaya Dön">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
+      <span id="novel-title" class="novel-title-badge">Roman Yükleniyor...</span>
+    </div>
+
+    <!-- Okuyucu Ayarları Paneli -->
+    <div class="reader-controls">
+      <button id="font-family-toggle" class="ctrl-btn" title="Yazı Tipi (Serif/Sans)">Serif</button>
+      <button id="font-decrease" class="ctrl-btn" title="Metni Küçült">A-</button>
+      <button id="font-increase" class="ctrl-btn" title="Metni Büyüt">A+</button>
+      
+      <div class="theme-picker">
+        <button class="theme-btn theme-btn-dark" data-theme="theme-dark" title="Karanlık Mod"></button>
+        <button class="theme-btn theme-btn-sepia" data-theme="theme-sepia" title="Sepya Modu"></button>
+        <button class="theme-btn theme-btn-light" data-theme="theme-light" title="Aydınlık Mod"></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Okuma İçerik Alanı -->
+  <main class="reader-container">
+    <header class="chapter-header">
+      <h1 id="chapter-title" class="chapter-title">...</h1>
+      <div class="chapter-meta">
+        <span id="chapter-date"></span>
+      </div>
+    </header>
+
+    <article id="chapter-content" class="chapter-content font-serif">
+      <p class="loading-text">Bölüm içeriği yükleniyor, lütfen bekleyin...</p>
+    </article>
+
+    <!-- Bölüm Sonu Alt Gezinti -->
+    <nav class="chapter-nav">
+      <a id="prev-chapter-btn" href="#" class="nav-btn disabled">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        Önceki Bölüm
+      </a>
+      <a id="next-chapter-btn" href="#" class="nav-btn disabled">
+        Sonraki Bölüm
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+    </nav>
+  </main>
+
+  <script src="js/reader.js" defer></script>
+</body>
+</html>
