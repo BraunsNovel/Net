@@ -20,7 +20,6 @@ function slugify(text) {
     .replace(/\-\-+/g, '-');
 }
 
-// Dizin Yolları
 const chaptersDir = path.join(__dirname, '../content/chapters');
 const novelsDir = path.join(__dirname, '../content/novels');
 const srcDir = path.join(__dirname, '../src');
@@ -28,32 +27,59 @@ const adminDir = path.join(__dirname, '../admin');
 const staticDir = path.join(__dirname, '../static');
 const distDir = path.join(__dirname, '../dist');
 
-// Temizlik & Klasör Oluşturma
 if (fs.existsSync(distDir)) fs.rmSync(distDir, { recursive: true, force: true });
 fs.mkdirSync(distDir, { recursive: true });
 
 const novelsMap = {};
 
-// 1. NOVELLERİ DERLE & STATİK HTML ÜRET
+// 1. NOVELLERİ DERLE, SEO HTML VE İNDEKS JSON'LARI ÜRET
 function buildNovels() {
   if (!fs.existsSync(novelsDir)) return [];
 
   const files = fs.readdirSync(novelsDir).filter(f => f.endsWith('.md'));
+  const searchIndex = [];
+  const genresMap = {};
+
   const novels = files.map(file => {
     const { data: meta, content } = matter(fs.readFileSync(path.join(novelsDir, file), 'utf-8'));
     const cleanSlug = slugify(meta.slug || file.replace('.md', ''));
+    const genres = Array.isArray(meta.genres) ? meta.genres : ['Genel'];
+
     novelsMap[cleanSlug] = meta.title || 'İsimsiz Roman';
 
     const novelData = {
       title: meta.title || 'İsimsiz Roman',
+      original_title: meta.original_title || '',
       slug: cleanSlug,
-      author: meta.author || 'An Ri',
+      author: meta.author || 'Anonim',
+      translator: meta.translator || 'An Ri',
       cover: meta.cover || '',
+      cover_bg: meta.cover_bg || '#1e1e24',
+      release_year: meta.release_year || null,
       status: meta.status || 'Devam Ediyor',
+      genres: genres,
+      featured: Boolean(meta.featured),
+      seo_description: meta.seo_description || meta.title + ' web novel serisini Türkçe oku.',
+      seo_keywords: meta.seo_keywords || 'web novel, oku, light novel',
       descriptionHtml: marked.parse(content)
     };
 
-    // Statik Novel Sayfası Üret (SEO İçin)
+    // Arama İndeksine Ekle (Sadece hafif veriler)
+    searchIndex.push({
+      title: novelData.title,
+      original_title: novelData.original_title,
+      slug: novelData.slug,
+      cover: novelData.cover,
+      author: novelData.author,
+      genres: novelData.genres
+    });
+
+    // Tür Haritasını Güncelle
+    genres.forEach(g => {
+      genresMap[g] = (genresMap[g] || 0) + 1;
+    });
+
+    // SEO Uyumlu Statik Novel HTML Sayfası
     const novelHtmlDir = path.join(distDir, 'novels', cleanSlug);
     fs.mkdirSync(novelHtmlDir, { recursive: true });
 
@@ -62,16 +88,28 @@ function buildNovels() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${novelData.title} - Oku</title>
-  <meta name="description" content="${meta.description || novelData.title + ' oku.'}">
+  <title>${novelData.title} - Web Novel Oku</title>
+  <meta name="description" content="${novelData.seo_description}">
+  <meta name="keywords" content="${novelData.seo_keywords}">
+  <meta property="og:title" content="${novelData.title}">
+  <meta property="og:description" content="${novelData.seo_description}">
+  <meta property="og:image" content="${novelData.cover}">
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body style="--accent-color: ${novelData.cover_bg}">
   <main class="container">
     <a href="/" class="back-link">← Ana Sayfa</a>
     <article class="novel-detail">
-      <h1>${novelData.title}</h1>
-      <p><strong>Yazar:</strong> ${novelData.author} | <strong>Durum:</strong> ${novelData.status}</p>
+      <div class="novel-header">
+        ${novelData.cover ? `<img src="${novelData.cover}" alt="${novelData.title}" class="novel-cover">` : ''}
+        <div class="novel-meta">
+          <h1>${novelData.title}</h1>
+          ${novelData.original_title ? `<h2 class="orig-title">${novelData.original_title}</h2>` : ''}
+          <p><strong>Yazar:</strong> ${novelData.author} | <strong>Çevirmen:</strong> ${novelData.translator}</p>
+          <p><strong>Durum:</strong> ${novelData.status} ${novelData.release_year ? `(${novelData.release_year})` : ''}</p>
+          <div class="genres">${novelData.genres.map(g => `<span class="tag">${g}</span>`).join(' ')}</div>
+        </div>
+      </div>
       <div class="novel-description">${novelData.descriptionHtml}</div>
     </article>
   </main>
@@ -82,13 +120,19 @@ function buildNovels() {
     return novelData;
   });
 
-  fs.mkdirSync(path.join(distDir, 'content'), { recursive: true });
-  fs.writeFileSync(path.join(distDir, 'content/novels-index.json'), JSON.stringify(novels, null, 2));
-  console.log(`✅ ${novels.length} roman için statik HTML ve JSON üretildi.`);
+  const contentDir = path.join(distDir, 'content');
+  fs.mkdirSync(contentDir, { recursive: true });
+
+  // İndeks Dosyalarını Kaydet
+  fs.writeFileSync(path.join(contentDir, 'novels-index.json'), JSON.stringify(novels, null, 2));
+  fs.writeFileSync(path.join(contentDir, 'search.json'), JSON.stringify(searchIndex, null, 2));
+  fs.writeFileSync(path.join(contentDir, 'genres.json'), JSON.stringify(genresMap, null, 2));
+
+  console.log(`✅ ${novels.length} roman için HTML, search.json ve genres.json üretildi.`);
   return novels;
 }
 
-// 2. BÖLÜMLERİ DERLE & STATİK HTML ÜRET (GERÇEK OKUMA SAYFALARI)
+// 2. BÖLÜMLERİ DERLE & STATİK HTML ÜRET
 function buildChapters() {
   if (!fs.existsSync(chaptersDir)) return;
 
@@ -105,6 +149,7 @@ function buildChapters() {
       novelTitle: novelsMap[cleanNovelSlug] || 'Web Novel',
       order: parseInt(meta.order || meta.chapter_number) || 1,
       date: meta.date || new Date().toISOString(),
+      translator_note: meta.translator_note ? marked.parse(meta.translator_note) : '',
       contentHtml: marked.parse(content)
     };
   }).sort((a, b) => a.order - b.order);
@@ -113,7 +158,6 @@ function buildChapters() {
     const prevChapter = chapters[index - 1];
     const nextChapter = chapters[index + 1];
 
-    // Statik Bölüm Sayfası Üret (SEO Uyumlu HTML)
     const chapterHtmlDir = path.join(distDir, 'chapters', ch.slug);
     fs.mkdirSync(chapterHtmlDir, { recursive: true });
 
@@ -123,6 +167,7 @@ function buildChapters() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${ch.novelTitle} - ${ch.title}</title>
+  <meta name="description" content="${ch.novelTitle} serisinin ${ch.title} bölümünü Türkçe oku.">
   <link rel="stylesheet" href="/css/reader.css">
 </head>
 <body class="reader-body">
@@ -131,6 +176,7 @@ function buildChapters() {
   </header>
   <main class="reader-content">
     <h1>${ch.title}</h1>
+    ${ch.translator_note ? `<div class="translator-note"><strong>Çevirmen Notu:</strong> ${ch.translator_note}</div>` : ''}
     <div class="chapter-text">${ch.contentHtml}</div>
     <nav class="chapter-nav">
       ${prevChapter ? `<a href="/chapters/${prevChapter.slug}">← Önceki Bölüm</a>` : ''}
@@ -144,7 +190,7 @@ function buildChapters() {
   });
 
   fs.writeFileSync(path.join(distDir, 'content/chapters-index.json'), JSON.stringify(chapters, null, 2));
-  console.log(`✅ ${chapters.length} bölüm için statik HTML okuma sayfaları üretildi.`);
+  console.log(`✅ ${chapters.length} bölüm için HTML sayfaları üretildi.`);
 }
 
 // 3. STATİK DOSYALARI KOPYALA
@@ -158,4 +204,4 @@ function copyAssets() {
 buildNovels();
 buildChapters();
 copyAssets();
-console.log('🎉 SSG Derlemesi Tamamlandı!');
+console.log('🎉 2. Aşama (SEO & Akıllı İndeksler) Tamamlandı!');
