@@ -2,13 +2,13 @@
   command = "node scripts/build.js"
   publish = "dist"
 
-# Admin panelinin SPA yönlendirmesi
+# Admin Paneli SPA Yönlendirmesi (Yenileme Hatasını Çözer)
 [[redirects]]
   from = "/admin/*"
   to = "/admin/index.html"
   status = 200
 
-# Ön yüz uygulamasının (index.html) SPA yönlendirmesi
+# Ana Sayfa SPA Yönlendirmesi
 [[redirects]]
   from = "/*"
   to = "/index.html"
