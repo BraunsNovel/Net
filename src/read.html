@@ -1,70 +1,72 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bölüm Okunuyor | Braun Novel</title>
-  
-  <!-- Genel site stili (gerekirse) ve okuyucuya özel stil dosyası -->
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/reader.css">
-  
-  <!-- Fontlar -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yükleniyor... - Braun's Novel</title>
+    <link rel="stylesheet" href="css/reader.css">
+    <!-- Google Fonts: Okuma için optimize edilmiş fontlar -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body class="reader-body theme-dark">
-
-  <!-- Üst Kontrol Barı -->
-  <header class="reader-header">
-    <div class="reader-nav-left">
-      <a href="index.html" class="back-btn" aria-label="Ana Sayfaya Dön">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      </a>
-      <span id="novel-title" class="novel-title-badge">Roman Yükleniyor...</span>
+<body class="theme-light font-sans">
+    <!-- İlerleme Çubuğu -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
     </div>
 
-    <!-- Okuyucu Ayarları Paneli -->
-    <div class="reader-controls">
-      <button id="font-family-toggle" class="ctrl-btn" title="Yazı Tipi (Serif/Sans)">Serif</button>
-      <button id="font-decrease" class="ctrl-btn" title="Metni Küçült">A-</button>
-      <button id="font-increase" class="ctrl-btn" title="Metni Büyüt">A+</button>
-      
-      <div class="theme-picker">
-        <button class="theme-btn theme-btn-dark" data-theme="theme-dark" title="Karanlık Mod"></button>
-        <button class="theme-btn theme-btn-sepia" data-theme="theme-sepia" title="Sepya Modu"></button>
-        <button class="theme-btn theme-btn-light" data-theme="theme-light" title="Aydınlık Mod"></button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Okuma İçerik Alanı -->
-  <main class="reader-container">
-    <header class="chapter-header">
-      <h1 id="chapter-title" class="chapter-title">...</h1>
-      <div class="chapter-meta">
-        <span id="chapter-date"></span>
-      </div>
+    <!-- Üst Bar -->
+    <header class="reader-header">
+        <a href="index.html" class="back-link">← Kütüphaneye Dön</a>
+        <h1 id="chapterTitle" class="chapter-title">Bölüm Yükleniyor...</h1>
+        <button id="settingsToggle" class="settings-btn" aria-label="Ayarlar">⚙️</button>
     </header>
 
-    <article id="chapter-content" class="chapter-content font-serif">
-      <p class="loading-text">Bölüm içeriği yükleniyor, lütfen bekleyin...</p>
-    </article>
+    <!-- Ayarlar Paneli (Gizli) -->
+    <div id="settingsPanel" class="settings-panel hidden">
+        <div class="setting-group">
+            <label>Tema</label>
+            <div class="theme-options">
+                <button class="theme-btn active" data-theme="theme-light">☀️ Aydınlık</button>
+                <button class="theme-btn" data-theme="theme-sepia">📜 Sepya</button>
+                <button class="theme-btn" data-theme="theme-dark">🌙 Karanlık</button>
+            </div>
+        </div>
+        <div class="setting-group">
+            <label>Yazı Tipi</label>
+            <div class="font-options">
+                <button class="font-btn active" data-font="font-sans">Sans-Serif</button>
+                <button class="font-btn" data-font="font-serif">Serif</button>
+            </div>
+        </div>
+        <div class="setting-group">
+            <label>Yazı Boyutu: <span id="fontSizeDisplay">18</span>px</label>
+            <div class="size-options">
+                <button id="decreaseFont">A-</button>
+                <button id="increaseFont">A+</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Bölüm Sonu Alt Gezinti -->
-    <nav class="chapter-nav">
-      <a id="prev-chapter-btn" href="#" class="nav-btn disabled">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-        Önceki Bölüm
-      </a>
-      <a id="next-chapter-btn" href="#" class="nav-btn disabled">
-        Sonraki Bölüm
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-      </a>
-    </nav>
-  </main>
+    <!-- Ana İçerik -->
+    <main class="reader-content">
+        <div class="novel-info">
+            <span id="novelTitle" class="novel-name"></span>
+        </div>
+        
+        <div id="translatorNote" class="translator-note hidden"></div>
+        
+        <article id="chapterContent" class="chapter-text">
+            <!-- İçerik buraya JS ile gelecek -->
+        </article>
 
-  <script src="js/reader.js" defer></script>
+        <!-- Alt Navigasyon -->
+        <nav class="chapter-nav">
+            <a id="prevBtn" href="#" class="nav-btn disabled">← Önceki Bölüm</a>
+            <a href="index.html" class="nav-btn home-btn">📚 Kütüphane</a>
+            <a id="nextBtn" href="#" class="nav-btn disabled">Sonraki Bölüm →</a>
+        </nav>
+    </main>
+
+    <script type="module" src="js/reader.js"></script>
 </body>
 </html>
